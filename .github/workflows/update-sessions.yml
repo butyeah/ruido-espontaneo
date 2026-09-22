@@ -14,16 +14,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Fetch YouTube playlist items
+      - name: Fetch all YouTube playlist items (paginated)
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           PLAYLIST_ID="UU-HdzAvXl_Ye1KnHJTathFQ"
-          curl -s "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=15&playlistId=${PLAYLIST_ID}&key=${YOUTUBE_API_KEY}" \
-            | jq '[.items[] | select(.snippet.resourceId.videoId != null) | {title: .snippet.title, videoId: .snippet.resourceId.videoId, publishedAt: .snippet.publishedAt}]' \
-            > sessions.json
-          echo "Generated sessions.json:"
-          cat sessions.json
+          echo "[]" > all_items.json
+          PAGE_TOKEN=""
+
+          while : ; do
+            URL="https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${PLAYLIST_ID}&key=${YOUTUBE_API_KEY}"
+            if [ -n "$PAGE_TOKEN" ]; then
+              URL="${URL}&pageToken=${PAGE_TOKEN}"
+            fi
+
+            RESPONSE=$(curl -s "$URL")
+
+            PAGE_ITEMS=$(echo "$RESPONSE" | jq '[.items[] | select(.snippet.resourceId.videoId != null) | {title: .snippet.title, videoId: .snippet.resourceId.videoId, publishedAt: .snippet.publishedAt}]')
+
+            jq -s '.[0] + .[1]' all_items.json <(echo "$PAGE_ITEMS") > merged.json
+            mv merged.json all_items.json
+
+            PAGE_TOKEN=$(echo "$RESPONSE" | jq -r '.nextPageToken // empty')
+            if [ -z "$PAGE_TOKEN" ]; then
+              break
+            fi
+          done
+
+          mv all_items.json sessions.json
+          echo "Total sessions: $(jq 'length' sessions.json)"
 
       - name: Commit and push if changed
         run: |
