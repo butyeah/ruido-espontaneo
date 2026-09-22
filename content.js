@@ -1,3 +1,9 @@
+// La lista de sesiones (videos de YouTube) se lee de sessions.json en este
+// mismo repositorio. Ese archivo lo genera un GitHub Action que corre en el
+// servidor de GitHub usando una API key guardada como "secret" (nunca
+// visible aquí ni en el navegador). Ver .github/workflows/update-sessions.yml
+const SESSIONS_URL = "sessions.json";
+
 // Contenido editable del sitio. Cambia estos textos y enlaces cuando quieras.
 const SITE = {
   nombre: "RUIDO ESPONTANEO",
@@ -21,18 +27,6 @@ const SECTIONS = {
       "colaboraciones con artistas locales.",
       "",
       "[ Edita este texto en content.js -> SECTIONS.informacion ]",
-    ],
-  },
-  sesiones: {
-    titulo: "SESIONES",
-    lineas: [
-      "Próximas sesiones y grabaciones en vivo:",
-      "",
-      "  - Sesión en vivo desde Foro Ruido",
-      "  - DJ sets y colaboraciones",
-      "  - Podcasts y episodios grabados",
-      "",
-      "[ Edita este texto en content.js -> SECTIONS.sesiones ]",
     ],
   },
   colectivo: {
