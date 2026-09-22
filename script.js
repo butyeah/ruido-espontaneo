@@ -37,6 +37,16 @@
     output.appendChild(document.createTextNode("\n"));
   }
 
+  // Para líneas con HTML de confianza (enlaces), generado solo a partir de
+  // content.js, nunca de datos externos o del usuario.
+  function printHtml(html, cls = "") {
+    const span = document.createElement("span");
+    if (cls) span.className = cls;
+    span.innerHTML = html;
+    output.appendChild(span);
+    output.appendChild(document.createTextNode("\n"));
+  }
+
   const ASCII_TITLE = [
     "┌──────────────────────────────────┐",
     "│        R U I D O                  │",
@@ -86,6 +96,30 @@
     print(section.titulo, "amber");
     print("─".repeat(section.titulo.length), "dim");
     printLines(section.lineas);
+    printBlank();
+    print("[0] Volver al menú   [4] Redes sociales", "dim");
+    printBlank();
+  }
+
+  function renderColectivo() {
+    mode = "menu";
+    clearPlayer();
+    const section = SECTIONS.colectivo;
+    printBlank();
+    print(section.titulo, "amber");
+    print("─".repeat(section.titulo.length), "dim");
+    printLines(section.intro);
+    printBlank();
+    print("Colaboradores:");
+    section.colaboradores.forEach((c) => {
+      if (c.instagram) {
+        printHtml(
+          `  - ${escapeHtml(c.handle)} — <a class="link" href="${c.instagram}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.instagram)}</a>`
+        );
+      } else {
+        print(`  - ${c.handle}`);
+      }
+    });
     printBlank();
     print("[0] Volver al menú   [4] Redes sociales", "dim");
     printBlank();
@@ -257,7 +291,7 @@
         break;
       case "3":
       case "colectivo":
-        renderSection("colectivo");
+        renderColectivo();
         break;
       case "4":
       case "redes":
