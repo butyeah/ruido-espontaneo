@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruido Espontaneo — Terminal</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="crt">
+    <div class="scanlines"></div>
+    <main id="terminal" class="terminal" role="application" aria-label="Terminal Ruido Espontaneo">
+      <pre id="output" class="output"></pre>
+
+      <div class="input-line">
+        <span class="prompt">ruido@espontaneo:~$</span>
+        <input id="cmd-input" class="cmd-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Selecciona una opción" />
+        <span class="cursor">█</span>
+      </div>
+    </main>
+  </div>
+
+  <script src="content.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
