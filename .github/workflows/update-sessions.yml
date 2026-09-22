@@ -1,0 +1,38 @@
+name: Update YouTube sessions
+
+# Se ejecuta solo manualmente desde la pestaña "Actions" del repositorio.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-sessions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch YouTube playlist items
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          PLAYLIST_ID="UU-HdzAvXl_Ye1KnHJTathFQ"
+          curl -s "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=15&playlistId=${PLAYLIST_ID}&key=${YOUTUBE_API_KEY}" \
+            | jq '[.items[] | select(.snippet.resourceId.videoId != null) | {title: .snippet.title, videoId: .snippet.resourceId.videoId, publishedAt: .snippet.publishedAt}]' \
+            > sessions.json
+          echo "Generated sessions.json:"
+          cat sessions.json
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sessions.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Actualizar sessions.json desde YouTube"
+            git push
+          fi
