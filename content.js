@@ -41,8 +41,6 @@ const SECTIONS = {
       "  - @buenveneno",
       "  - @xvolcax",
       "  - @anaflauer",
-      "",
-      "Miembro fundador:",
       "  - rem",
     ],
   },
