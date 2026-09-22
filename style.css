@@ -63,6 +63,18 @@ html, body {
 .output .error { color: var(--error); }
 .output .prompt-echo { color: var(--fg-bright); }
 
+.player {
+  margin: 4px 0 16px 0;
+}
+
+.player iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--fg-dim);
+  background: #000;
+}
+
 .input-line {
   display: flex;
   align-items: center;
