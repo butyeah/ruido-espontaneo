@@ -31,17 +31,18 @@ const SECTIONS = {
   },
   colectivo: {
     titulo: "COLECTIVO",
-    lineas: [
+    intro: [
       "Somos un colectivo de artistas, músicos y colaboradores",
       "unidos por el gusto de experimentar con el sonido.",
-      "",
-      "Colaboradores:",
-      "  - @cfcea",
-      "  - @luu.feliz",
-      "  - @buenveneno",
-      "  - @xvolcax",
-      "  - @anaflauer",
-      "  - rem",
+    ],
+    // instagram: null cuando la persona no tiene redes sociales.
+    colaboradores: [
+      { handle: "@cfcea", instagram: "https://instagram.com/cfcea" },
+      { handle: "@luu.feliz", instagram: "https://instagram.com/luu.feliz" },
+      { handle: "@buenveneno", instagram: "https://instagram.com/buenveneno" },
+      { handle: "@xvolcax", instagram: "https://instagram.com/xvolcax" },
+      { handle: "@anaflauer", instagram: "https://instagram.com/anaflauer" },
+      { handle: "rem", instagram: null },
     ],
   },
 };
