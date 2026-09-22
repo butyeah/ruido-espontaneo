@@ -1,9 +1,18 @@
 (function () {
   const output = document.getElementById("output");
   const input = document.getElementById("cmd-input");
+  const player = document.getElementById("player");
 
   const history = [];
   let historyIndex = -1;
+
+  // mode: "menu" | "sesiones-list" | "sesiones-player"
+  let mode = "menu";
+  let sessionsCache = null; // array of { title, videoId }
+
+  function clearPlayer() {
+    player.innerHTML = "";
+  }
 
   function escapeHtml(str) {
     return str
@@ -55,6 +64,8 @@
   }
 
   function renderHome() {
+    mode = "menu";
+    clearPlayer();
     printBlank();
     ASCII_TITLE.forEach((l) => print(l, "bright"));
     printBlank();
@@ -64,6 +75,8 @@
   }
 
   function renderSection(id) {
+    mode = "menu";
+    clearPlayer();
     const section = SECTIONS[id];
     if (!section) {
       print(`Sección no encontrada: ${id}`, "error");
@@ -79,6 +92,8 @@
   }
 
   function renderRedes() {
+    mode = "menu";
+    clearPlayer();
     printBlank();
     print("REDES SOCIALES", "amber");
     print("──────────────", "dim");
@@ -93,17 +108,93 @@
     print("COMANDOS DISPONIBLES", "amber");
     print("─────────────────────", "dim");
     print("  1 | informacion   → ver sección Información");
-    print("  2 | sesiones      → ver sección Sesiones");
+    print("  2 | sesiones      → ver lista de sesiones (YouTube)");
     print("  3 | colectivo     → ver sección Colectivo");
     print("  4 | redes         → ver enlaces a redes sociales");
     print("  0 | inicio | menu → volver al menú principal");
     print("  ayuda | help      → mostrar esta ayuda");
     print("  limpiar | clear   → limpiar la pantalla");
     printBlank();
+    print("Dentro de Sesiones: escribe el número del video para reproducirlo.", "dim");
+    printBlank();
   }
 
   function clearScreen() {
     output.innerHTML = "";
+  }
+
+  // ---- Sesiones (YouTube) ----
+
+  async function fetchSessions() {
+    const res = await fetch(`${SESSIONS_URL}?t=${Date.now()}`);
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+
+  async function renderSesionesList(useCache = false) {
+    mode = "sesiones-list";
+    clearPlayer();
+    printBlank();
+    print("SESIONES", "amber");
+    print("────────", "dim");
+
+    if (useCache && sessionsCache) {
+      printSessionsList();
+      return;
+    }
+
+    print("Cargando videos desde YouTube...", "dim");
+
+    try {
+      sessionsCache = await fetchSessions();
+      // Remove the "Cargando..." line and reprint cleanly.
+      print("");
+      printSessionsList();
+    } catch (err) {
+      print(`No se pudo cargar la lista de YouTube (${err.message}).`, "error");
+      print("Intenta de nuevo más tarde, o visita el canal directamente:", "dim");
+      const yt = SITE.redes.find((r) => r.nombre === "YouTube");
+      if (yt) print(`  ${yt.url}`);
+      printBlank();
+      print("[0] Volver al menú", "dim");
+      printBlank();
+    }
+  }
+
+  function printSessionsList() {
+    if (!sessionsCache || sessionsCache.length === 0) {
+      print("No hay videos disponibles por ahora.", "dim");
+    } else {
+      sessionsCache.forEach((s, i) => {
+        print(`  [${i + 1}] ${s.title}`);
+      });
+    }
+    printBlank();
+    print("Escribe el número de una sesión para reproducirla.", "dim");
+    print("[0] Volver al menú   [4] Redes sociales", "dim");
+    printBlank();
+  }
+
+  function playSession(index) {
+    const session = sessionsCache[index];
+    if (!session) {
+      print("Sesión no encontrada.", "error");
+      return;
+    }
+    mode = "sesiones-player";
+    printBlank();
+    print(`▶ ${session.title}`, "amber");
+    printBlank();
+    player.innerHTML = `<iframe src="https://www.youtube.com/embed/${session.videoId}?autoplay=1"
+      title="${session.title.replace(/"/g, "&quot;")}"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen></iframe>`;
+    printBlank();
+    print("[0] Volver a la lista de sesiones", "dim");
+    printBlank();
   }
 
   function handleCommand(raw) {
@@ -114,11 +205,45 @@
 
     if (cmd === "") return;
 
+    // Global keywords work from any mode.
+    if (cmd === "inicio" || cmd === "menu" || cmd === "menú") {
+      renderHome();
+      scrollDown();
+      return;
+    }
+    if (cmd === "ayuda" || cmd === "help" || cmd === "?") {
+      renderHelp();
+      scrollDown();
+      return;
+    }
+    if (cmd === "limpiar" || cmd === "clear" || cmd === "cls") {
+      clearScreen();
+      return;
+    }
+
+    // Context-aware numeric input inside Sesiones.
+    if (mode === "sesiones-list") {
+      if (cmd === "0") {
+        renderHome();
+        scrollDown();
+        return;
+      }
+      const idx = parseInt(cmd, 10);
+      if (!isNaN(idx) && sessionsCache && idx >= 1 && idx <= sessionsCache.length) {
+        playSession(idx - 1);
+        scrollDown();
+        return;
+      }
+    } else if (mode === "sesiones-player") {
+      if (cmd === "0") {
+        renderSesionesList(true);
+        scrollDown();
+        return;
+      }
+    }
+
     switch (cmd) {
       case "0":
-      case "inicio":
-      case "menu":
-      case "menú":
         renderHome();
         break;
       case "1":
@@ -128,7 +253,7 @@
         break;
       case "2":
       case "sesiones":
-        renderSection("sesiones");
+        renderSesionesList();
         break;
       case "3":
       case "colectivo":
@@ -140,20 +265,14 @@
       case "sociales":
         renderRedes();
         break;
-      case "ayuda":
-      case "help":
-      case "?":
-        renderHelp();
-        break;
-      case "limpiar":
-      case "clear":
-      case "cls":
-        clearScreen();
-        break;
       default:
         print(`Comando no reconocido: "${raw}". Escribe 'ayuda' para ver opciones.`, "error");
     }
 
+    scrollDown();
+  }
+
+  function scrollDown() {
     output.parentElement.scrollTop = output.parentElement.scrollHeight;
     window.scrollTo(0, document.body.scrollHeight);
   }
