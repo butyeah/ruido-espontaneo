@@ -311,6 +311,13 @@
     window.scrollTo(0, document.body.scrollHeight);
   }
 
+  // Ajusta el ancho del input al texto para que el cursor quede a la izquierda, junto al prompt.
+  function fitInput() {
+    input.style.width = `calc(${input.value.length}ch + 2px)`;
+  }
+
+  input.addEventListener("input", fitInput);
+
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       const value = input.value;
@@ -334,6 +341,7 @@
         input.value = "";
       }
     }
+    fitInput();
   });
 
   document.getElementById("terminal").addEventListener("click", () => input.focus());

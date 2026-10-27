@@ -34,6 +34,8 @@ const SECTIONS = {
     intro: [
       "Somos un colectivo de artistas, músicos y colaboradores",
       "unidos por el gusto de experimentar con el sonido.",
+      "",
+      "El proyecto fue creado y dirigido por @buenveneno.",
     ],
     // instagram: null cuando la persona no tiene redes sociales.
     colaboradores: [
@@ -42,7 +44,6 @@ const SECTIONS = {
       { handle: "@buenveneno", instagram: "https://instagram.com/buenveneno" },
       { handle: "@xvolcax", instagram: "https://instagram.com/xvolcax" },
       { handle: "@anaflauer", instagram: "https://instagram.com/anaflauer" },
-      { handle: "rem", instagram: null },
     ],
   },
 };
